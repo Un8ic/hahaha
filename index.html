@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Анекдот</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            background: linear-gradient(145deg, #0b2b44, #1a4a6b, #2d6a8f);
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            margin: 0;
+            touch-action: manipulation;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-radius: 40px;
+            padding: 32px 20px 36px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: 0.2s;
+            position: relative;
+        }
+
+        /* Вопрос — крупный, яркий */
+        .question {
+            font-size: 2.6rem;
+            font-weight: 900;
+            color: #ffffff;
+            margin: 4px 0 28px;
+            padding: 22px 12px;
+            border-radius: 60px;
+            background: rgba(255, 215, 0, 0.08);
+            border: 2px solid rgba(255, 215, 0, 0.2);
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.05);
+            line-height: 1.3;
+            letter-spacing: 0.5px;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.1);
+        }
+        .question span {
+            display: inline-block;
+            background: linear-gradient(135deg, #f7971e, #ffd200, #f7971e);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 900;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+            position: relative;
+            min-height: 90px;
+        }
+
+        .btn {
+            border: none;
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            padding: 18px 38px;
+            border-radius: 80px;
+            cursor: pointer;
+            letter-spacing: 0.3px;
+            min-width: 130px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.1s ease;
+            touch-action: manipulation;
+            position: relative;
+            transform: translateY(0);
+            -webkit-touch-callout: none;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .btn:active {
+            transform: scale(0.94) translateY(3px);
+        }
+
+        #yesBtn {
+            background: linear-gradient(145deg, #1e7e3a, #2e9e4e);
+            box-shadow: 0 6px 0 #145a28, 0 6px 30px rgba(46, 158, 78, 0.3);
+        }
+        #yesBtn:active {
+            box-shadow: 0 2px 0 #145a28, 0 6px 30px rgba(46, 158, 78, 0.2);
+        }
+
+        #noBtn {
+            background: linear-gradient(145deg, #a31515, #c62828);
+            box-shadow: 0 6px 0 #6d0a0a, 0 6px 30px rgba(198, 40, 40, 0.3);
+            transition: left 0.25s cubic-bezier(0.34, 1.6, 0.64, 1), top 0.25s cubic-bezier(0.34, 1.6, 0.64, 1), transform 0.1s, box-shadow 0.1s;
+            position: relative;
+            will-change: left, top;
+            touch-action: manipulation;
+        }
+        #noBtn:active {
+            box-shadow: 0 2px 0 #6d0a0a, 0 6px 30px rgba(198, 40, 40, 0.2);
+        }
+
+        /* кнопка "Ещё шутеечку?" */
+        #moreBtn {
+            background: linear-gradient(145deg, #6a1b9a, #8e24aa);
+            box-shadow: 0 6px 0 #4a148c, 0 6px 30px rgba(142, 36, 170, 0.3);
+            font-size: 1.6rem;
+            padding: 14px 28px;
+            min-width: 200px;
+            display: none;
+            margin-top: 8px;
+        }
+        #moreBtn:active {
+            box-shadow: 0 2px 0 #4a148c, 0 6px 30px rgba(142, 36, 170, 0.2);
+        }
+
+        .joke-area {
+            margin-top: 28px;
+            padding: 8px 4px;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .joke-text {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 26px 18px;
+            border-radius: 28px;
+            font-size: 1.5rem;
+            color: #f5f0eb;
+            border-left: 6px solid #ffb300;
+            box-shadow: 0 8px 36px rgba(0, 0, 0, 0.6);
+            width: 100%;
+            transition: opacity 0.45s cubic-bezier(0.34, 1.2, 0.64, 1), transform 0.45s cubic-bezier(0.34, 1.2, 0.64, 1);
+            border: 1px solid rgba(255, 180, 0, 0.1);
+            line-height: 1.6;
+            font-weight: 400;
+            letter-spacing: 0.2px;
+            opacity: 0;
+            transform: scale(0.85) translateY(18px);
+            pointer-events: none;
+            word-break: break-word;
+            text-align: left;
+        }
+        .joke-text.show {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+        }
+
+        /* финальный вопрос */
+        .final-question {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #fff;
+            margin-top: 16px;
+            padding: 16px;
+            background: rgba(255, 215, 0, 0.12);
+            border-radius: 40px;
+            border: 2px solid rgba(255, 215, 0, 0.2);
+            display: none;
+            line-height: 1.4;
+        }
+        .final-question .highlight {
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        .final-btns {
+            display: none;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        .final-btns .btn {
+            font-size: 1.6rem;
+            padding: 14px 30px;
+            min-width: 120px;
+        }
+        #finalYes {
+            background: linear-gradient(145deg, #1e7e3a, #2e9e4e);
+            box-shadow: 0 6px 0 #145a28, 0 6px 30px rgba(46, 158, 78, 0.3);
+        }
+        #finalNo {
+            background: linear-gradient(145deg, #a31515, #c62828);
+            box-shadow: 0 6px 0 #6d0a0a, 0 6px 30px rgba(198, 40, 40, 0.3);
+        }
+
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            width: 13px;
+            height: 13px;
+            opacity: 0.9;
+            border-radius: 3px;
+            animation: confettiFall 2.5s ease-out forwards;
+            will-change: transform, opacity;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) rotate(0deg) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) rotate(660deg) scale(0.1);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 22px 14px 26px;
+                border-radius: 32px;
+            }
+            .question {
+                font-size: 2rem;
+                padding: 16px 10px;
+                margin: 0 0 20px;
+            }
+            .btn {
+                font-size: 1.7rem;
+                padding: 16px 24px;
+                min-width: 100px;
+            }
+            .btn-group {
+                gap: 18px;
+                min-height: 80px;
+            }
+            .joke-text {
+                font-size: 1.2rem;
+                padding: 18px 14px;
+            }
+            #moreBtn {
+                font-size: 1.3rem;
+                padding: 12px 20px;
+                min-width: 160px;
+            }
+            .final-question {
+                font-size: 1.7rem;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .btn {
+                font-size: 1.4rem;
+                padding: 14px 16px;
+                min-width: 80px;
+            }
+            .question {
+                font-size: 1.6rem;
+            }
+            .joke-text {
+                font-size: 1rem;
+                padding: 14px 12px;
+            }
+            #moreBtn {
+                font-size: 1.1rem;
+                padding: 10px 16px;
+                min-width: 140px;
+            }
+        }
+
+        @media (max-height: 700px) {
+            .card {
+                padding: 16px 12px 18px;
+            }
+            .question {
+                margin: 0 0 12px;
+                padding: 12px 8px;
+                font-size: 1.7rem;
+            }
+            .joke-area {
+                margin-top: 14px;
+                min-height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card" id="mainCard">
+
+        <div class="question" id="questionText">
+            <span>❓ Хочешь анекдот?</span>
+        </div>
+
+        <div class="btn-group" id="btnGroup">
+            <button class="btn" id="yesBtn">✅ Да</button>
+            <button class="btn" id="noBtn">❌ Нет</button>
+        </div>
+
+        <div class="joke-area">
+            <div class="joke-text" id="jokeDisplay">
+                🎪 Йо, ща будет угар…
+            </div>
+            <button class="btn" id="moreBtn">🔥 Ещё шутеечку?</button>
+        </div>
+
+        <!-- финальный блок -->
+        <div class="final-question" id="finalQuestion">
+            <span class="highlight">😏 Понравилось ли вам?</span>
+        </div>
+        <div class="final-btns" id="finalBtns">
+            <button class="btn" id="finalYes">😊 Да</button>
+            <button class="btn" id="finalNo">😤 Нет</button>
+        </div>
+    </div>
+
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <script>
+        (function() {
+            // ---- элементы ----
+            const yesBtn = document.getElementById('yesBtn');
+            const noBtn = document.getElementById('noBtn');
+            const moreBtn = document.getElementById('moreBtn');
+            const jokeDisplay = document.getElementById('jokeDisplay');
+            const questionText = document.getElementById('questionText');
+            const btnGroup = document.getElementById('btnGroup');
+            const finalQuestion = document.getElementById('finalQuestion');
+            const finalBtns = document.getElementById('finalBtns');
+            const finalYes = document.getElementById('finalYes');
+            const finalNo = document.getElementById('finalNo');
+            const confettiContainer = document.getElementById('confettiContainer');
+            const mainCard = document.getElementById('mainCard');
+
+            // ---- ШУТКИ (твои, все 14) ----
+            const jokes = [
+                `Решил стать слесарем. Думал, буду чинить краны, а оказалось, что всю жизнь мне будут говорить: «Саня, блять, дай ключ на 14».`,
+
+                `Психотерапевт говорит: «Вам нужно принять свою темную сторону». Я принял. Теперь моя темная сторона требует, чтобы я послал терапевта нахуй, и я чувствую себя просто прекрасно.`,
+
+                `Вчера было так плохо, что я пил водку с пивом, чтобы хоть как-то разбавить это дерьмо. Сегодня я понял, что разбавлял я говно в своем стакане.`,
+
+                `Раньше я думал, что в старости буду мудрым дедом с внуками. Сейчас я понимаю, что буду просто старым пердуном, который орет на молодежь из окна, потому что у меня кончился интернет, а я не помню пароль от вайфая.`,
+
+                `На собеседовании спросили: «Какие у вас недостатки?». Ответил: «Я слишком честный». Босс сказал: «Я не считаю это недостатком». Тогда я сказал: «Да мне вообще похуй на вашу работу, я просто хочу деньги».`,
+
+                `Решил заняться спортом и правильным питанием. Сказал себе: «Хватит жрать эту херню!». В ответ услышал внутренний голос: «А кто тебе сказал, что пицца — это херня? Пицца — это культура, мудила».`,
+
+                `Жизнь — это как унитаз. То ты на нем сидишь, то он тебя смывает. И только коту на это насрать (в прямом смысле).`,
+
+                `Лег спать в 11 вечера с мыслью, что высплюсь. Проснулся в 3 часа ночи от того, что захотелось пить. Посмотрел в телефон, залип на 5 минут, понял, что уже утро, и решил: «А пошло оно всё, буду страдать».`,
+
+                `Есть два типа людей: те, кто может экстраполировать данные из неполной информации. И еб*ки, которые не поняли эту шутку.`,
+
+                `Родители говорили мне: «Будь вежливым, не матерись». Я вырос, купил машину, и теперь мой лексикон — это сборник лучших пожеланий здоровья всем водителям. И я считаю это проявлением высокой культуры общения.`,
+
+                `Деньги — это зло. Но я люблю это зло так сильно, что готов просыпаться каждое утро в 6 утра, чтобы обниматься с этим злом в офисном кресле.`,
+
+                `Вчера пытался починить роутер. Метод «выключи-включи» не помог. Помог метод «пни его ногой и скажи: "Да работай ты, сука!"». Технологии шагнули вперед.`,
+
+                `С утра посмотрел в зеркало и подумал: «Ну, красавчик, выходи». Зеркало треснуло. Видимо, не выдержало моего чувства юмора.`,
+
+                `Живите так, чтобы ваши друзья, когда вас не стало, сказали не «Какой был хороший человек», а «Блять, а кто теперь будет нам присылать эти идиотские мемы в 3 часа ночи?». Вот это настоящее наследие.`
+            ];
+
+            // ---- состояние ----
+            let jokeShown = false;
+            let isConfettiActive = false;
+            let jokeCounter = 0;          // сколько анекдотов показано
+            let usedIndices = [];         // какие индексы уже использованы
+            let currentJokeIndex = -1;
+
+            // ---- конфетти ----
+            function fireConfetti() {
+                if (isConfettiActive) return;
+                isConfettiActive = true;
+
+                const container = confettiContainer;
+                const colors = ['#facc15', '#f87171', '#60a5fa', '#34d399', '#f472b6', '#c084fc', '#fb923c', '#22d3ee', '#ffd700', '#ff6b6b', '#48dbfb', '#ff9ff3'];
+                const count = 60;
+
+                for (let i = 0; i < count; i++) {
+                    const piece = document.createElement('div');
+                    piece.className = 'confetti-piece';
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    piece.style.backgroundColor = color;
+
+                    const startX = window.innerWidth / 2 + (Math.random() - 0.5) * 120;
+                    const startY = window.innerHeight / 2 + (Math.random() - 0.5) * 80;
+                    piece.style.left = startX + 'px';
+                    piece.style.top = startY + 'px';
+
+                    const size = 8 + Math.random() * 14;
+                    piece.style.width = size + 'px';
+                    piece.style.height = size + 'px';
+                    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+
+                    const angle = Math.random() * 2 * Math.PI;
+                    const distance = 160 + Math.random() * 500;
+                    const tx = Math.cos(angle) * distance;
+                    const ty = Math.sin(angle) * distance - 160;
+
+                    piece.style.setProperty('--tx', tx + 'px');
+                    piece.style.setProperty('--ty', ty + 'px');
+
+                    const duration = 1.8 + Math.random() * 1.4;
+                    piece.style.animationDuration = duration + 's';
+                    piece.style.animationDelay = (Math.random() * 0.4) + 's';
+
+                    container.appendChild(piece);
+
+                    setTimeout(() => {
+                        if (piece.parentNode) piece.remove();
+                    }, (duration + 0.8) * 1000);
+                }
+
+                setTimeout(() => {
+                    isConfettiActive = false;
+                }, 3000);
+            }
+
+            // ---- показать анекдот ----
+            function showJoke() {
+                if (jokeShown && jokeCounter >= 5) {
+                    // уже показали 5, показываем финал
+                    showFinal();
+                    return;
+                }
+
+                // если ещё не показывали ни одного — скрываем начальные кнопки
+                if (!jokeShown) {
+                    questionText.style.display = 'none';
+                    btnGroup.style.display = 'none';
+                    jokeShown = true;
+                }
+
+                // выбираем случайный анекдот, который ещё не использовали
+                let available = [];
+                for (let i = 0; i < jokes.length; i++) {
+                    if (!usedIndices.includes(i)) available.push(i);
+                }
+
+                // если все использованы — сбрасываем
+                if (available.length === 0) {
+                    usedIndices = [];
+                    available = jokes.map((_, i) => i);
+                }
+
+                const randomIdx = available[Math.floor(Math.random() * available.length)];
+                usedIndices.push(randomIdx);
+                currentJokeIndex = randomIdx;
+
+                jokeDisplay.innerHTML = jokes[randomIdx];
+                jokeDisplay.classList.add('show');
+
+                // показываем кнопку "Ещё шутеечку?"
+                moreBtn.style.display = 'inline-block';
+
+                jokeCounter++;
+
+                // конфетти при каждом новом анекдоте
+                fireConfetti();
+                setTimeout(() => {
+                    if (!isConfettiActive) fireConfetti();
+                }, 400);
+
+                // если это 5-й анекдот — меняем текст на кнопке
+                if (jokeCounter >= 5) {
+                    moreBtn.textContent = '🎯 Хватит!';
+                    moreBtn.style.background = 'linear-gradient(145deg, #e65100, #f57c00)';
+                    moreBtn.style.boxShadow = '0 6px 0 #bf360c, 0 6px 30px rgba(245, 124, 0, 0.3)';
+                }
+            }
+
+            // ---- финальный вопрос ----
+            function showFinal() {
+                moreBtn.style.display = 'none';
+                jokeDisplay.classList.remove('show');
+                jokeDisplay.style.display = 'none';
+
+                finalQuestion.style.display = 'block';
+                finalBtns.style.display = 'flex';
+                fireConfetti();
+            }
+
+            // ---- обработчики ----
+            yesBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                showJoke();
+            });
+
+            yesBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                showJoke();
+            }, { passive: false });
+
+            // кнопка "Ещё шутеечку?"
+            moreBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (jokeCounter >= 5) {
+                    showFinal();
+                } else {
+                    showJoke();
+                }
+            });
+
+            moreBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                if (jokeCounter >= 5) {
+                    showFinal();
+                } else {
+                    showJoke();
+                }
+            }, { passive: false });
+
+            // ---- УБЕГАЮЩАЯ КНОПКА "НЕТ" ----
+            function moveNoButton() {
+                if (jokeShown) return;
+
+                const cardRect = mainCard.getBoundingClientRect();
+                const btnWidth = noBtn.offsetWidth;
+                const btnHeight = noBtn.offsetHeight;
+
+                const padding = 14;
+                const areaWidth = cardRect.width - padding * 2 - btnWidth;
+                const areaHeight = cardRect.height - padding * 2 - btnHeight;
+
+                if (areaWidth <= 0 || areaHeight <= 0) return;
+
+                const currentLeft = noBtn.offsetLeft;
+                const currentTop = noBtn.offsetTop;
+
+                let newLeft, newTop;
+                let attempts = 0;
+                const maxAttempts = 40;
+
+                do {
+                    newLeft = Math.random() * areaWidth + padding;
+                    newTop = Math.random() * areaHeight + padding;
+                    attempts++;
+                } while (
+                    (Math.abs(newLeft - currentLeft) < 50 && Math.abs(newTop - currentTop) < 50) &&
+                    attempts < maxAttempts
+                );
+
+                noBtn.style.left = newLeft + 'px';
+                noBtn.style.top = newTop + 'px';
+            }
+
+            noBtn.addEventListener('mouseenter', function(e) {
+                if (jokeShown) return;
+                moveNoButton();
+            });
+
+            noBtn.addEventListener('touchstart', function(e) {
+                if (jokeShown) return;
+                e.preventDefault();
+                moveNoButton();
+            }, { passive: false });
+
+            noBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!jokeShown) {
+                    moveNoButton();
+                }
+            });
+
+            // ---- финальные кнопки ----
+            finalYes.addEventListener('click', function() {
+                finalQuestion.innerHTML = '<span class="highlight">😊 Спасибо, рад, что понравилось!</span>';
+                finalBtns.style.display = 'none';
+                fireConfetti();
+            });
+
+            finalNo.addEventListener('click', function() {
+                finalQuestion.innerHTML = '<span class="highlight" style="color: #ff1744;">🤬 Ты ахуел?</span>';
+                finalBtns.style.display = 'none';
+                fireConfetti();
+                // добавим ещё конфетти для драматизма
+                setTimeout(() => fireConfetti(), 500);
+            });
+
+            // ---- сброс позиции при ресайзе ----
+            window.addEventListener('resize', function() {
+                if (!jokeShown) {
+                    noBtn.style.left = 'auto';
+                    noBtn.style.top = 'auto';
+                }
+            });
+
+            window.addEventListener('orientationchange', function() {
+                setTimeout(() => {
+                    if (!jokeShown) {
+                        noBtn.style.left = 'auto';
+                        noBtn.style.top = 'auto';
+                    }
+                }, 300);
+            });
+
+            console.log('🔥 Угарные шутки загружены! Жми "Да" и держись!');
+        })();
+    </script>
+</body>
+</html>
