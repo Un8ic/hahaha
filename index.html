@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Анекдот (мобильная версия)</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            margin: 0;
+            touch-action: manipulation;
+        }
+        /* карточка */
+        .card {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 40px;
+            padding: 28px 20px 32px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 215, 0, 0.12);
+            text-align: center;
+            border: 1px solid rgba(255, 215, 0, 0.15);
+            transition: 0.2s;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #facc15;
+            text-shadow: 0 4px 16px rgba(250, 204, 21, 0.25);
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .question {
+            font-size: 1.7rem;
+            font-weight: 500;
+            color: #e2e8f0;
+            margin: 16px 0 28px;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 18px 12px;
+            border-radius: 60px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            line-height: 1.4;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+            position: relative;
+            min-height: 90px;
+        }
+
+        .btn {
+            border: none;
+            background: #3b82f6;
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            padding: 18px 36px;
+            border-radius: 80px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #1d4ed8, 0 8px 24px rgba(59, 130, 246, 0.4);
+            letter-spacing: 0.5px;
+            min-width: 130px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.1s ease;
+            touch-action: manipulation;
+            position: relative;
+            transform: translateY(0);
+            /* Защита от долгого нажатия */
+            -webkit-touch-callout: none;
+        }
+
+        .btn:active {
+            transform: scale(0.95) translateY(4px);
+            box-shadow: 0 4px 0 #1d4ed8;
+        }
+
+        /* Кнопка "Нет" — убегает, но на телефоне переключаем стратегию: 
+           при касании она перемещается в случайное место (не только при наведении) */
+        #noBtn {
+            background: #ef4444;
+            box-shadow: 0 8px 0 #b91c1c, 0 8px 24px rgba(239, 68, 68, 0.4);
+            transition: left 0.25s cubic-bezier(0.34, 1.4, 0.64, 1), top 0.25s cubic-bezier(0.34, 1.4, 0.64, 1), transform 0.1s, box-shadow 0.1s;
+            position: relative;
+            will-change: left, top;
+            touch-action: manipulation;
+        }
+
+        #noBtn:active {
+            transform: scale(0.95) translateY(4px);
+            box-shadow: 0 4px 0 #b91c1c;
+        }
+
+        /* область анекдота */
+        .joke-area {
+            margin-top: 30px;
+            padding: 8px 4px;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .joke-text {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 24px 18px;
+            border-radius: 32px;
+            font-size: 1.5rem;
+            color: #f1f5f9;
+            border-left: 6px solid #facc15;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+            width: 100%;
+            transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
+            border: 1px solid rgba(255, 215, 0, 0.12);
+            line-height: 1.5;
+            font-weight: 400;
+            letter-spacing: 0.2px;
+            opacity: 0;
+            transform: scale(0.9) translateY(12px);
+            pointer-events: none;
+            word-break: break-word;
+        }
+
+        .joke-text.show {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+        }
+
+        /* конфетти */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            opacity: 0.95;
+            border-radius: 4px;
+            animation: confettiFall 2.6s ease-out forwards;
+            will-change: transform, opacity;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) rotate(0deg) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) rotate(720deg) scale(0.2);
+            }
+        }
+
+        /* аудио скрыто */
+        #clownAudio {
+            display: none;
+        }
+
+        /* мобильные уточнения */
+        @media (max-width: 480px) {
+            .card {
+                padding: 20px 14px 24px;
+                border-radius: 32px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            .question {
+                font-size: 1.4rem;
+                padding: 14px 10px;
+                margin: 12px 0 20px;
+            }
+            .btn {
+                font-size: 1.7rem;
+                padding: 16px 20px;
+                min-width: 110px;
+            }
+            .btn-group {
+                gap: 16px;
+                min-height: 80px;
+            }
+            .joke-text {
+                font-size: 1.25rem;
+                padding: 20px 14px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .btn {
+                font-size: 1.5rem;
+                padding: 14px 12px;
+                min-width: 90px;
+            }
+            .question {
+                font-size: 1.2rem;
+            }
+            .joke-text {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* для очень маленьких экранов — делаем отступы */
+        @media (max-height: 700px) {
+            .card {
+                padding: 16px 12px 20px;
+            }
+            .question {
+                margin: 8px 0 14px;
+                padding: 10px 8px;
+            }
+            .joke-area {
+                margin-top: 16px;
+                min-height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card" id="mainCard">
+        <h1>🤡 Шутник</h1>
+        <div class="question" id="questionText">❓ Хотите анекдот?</div>
+
+        <div class="btn-group" id="btnGroup">
+            <button class="btn" id="yesBtn">✅ Да</button>
+            <button class="btn" id="noBtn">❌ Нет</button>
+        </div>
+
+        <div class="joke-area">
+            <div class="joke-text" id="jokeDisplay">
+                🎪 Выходит Штирлиц из леса…<br>
+                <span style="font-size: 0.9rem; opacity: 0.6;">(анекдот загружен)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- аудио (звук клоунады) -->
+    <audio id="clownAudio" preload="auto">
+        <source src="https://www.soundjay.com/misc/sounds/circus-whistle-02.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <script>
+        (function() {
+            // ---- элементы ----
+            const yesBtn = document.getElementById('yesBtn');
+            const noBtn = document.getElementById('noBtn');
+            const jokeDisplay = document.getElementById('jokeDisplay');
+            const questionText = document.getElementById('questionText');
+            const btnGroup = document.getElementById('btnGroup');
+            const confettiContainer = document.getElementById('confettiContainer');
+            const clownAudio = document.getElementById('clownAudio');
+            const mainCard = document.getElementById('mainCard');
+
+            // ---- анекдоты ----
+            const jokes = [
+                '— Штирлиц, вы что, пьёте?<br>— Нет, это я так, принюхиваюсь…<br>🍺',
+                'Встречаются два клоуна:<br>— Ты чего такой грустный?<br>— Да вот, смех забыл дома… 🤡',
+                '— Почему у клоуна красный нос?<br>— Чтобы не видно было, что он пьёт! 🍷',
+                'Идёт медведь по цирку, видит — клоун плачет.<br>— Ты чего?<br>— Анекдот рассказали, а я не понял… 🐻',
+                '— Доктор, я смеюсь без причины!<br>— Это же заразно! Дайте я тоже посмеюсь! 😂',
+                'Клоун в баре:<br>— Мне, пожалуйста, что-нибудь весёлое.<br>Бармен: — Анекдот про Штирлица. 🥃'
+            ];
+
+            let jokeShown = false;
+            let isConfettiActive = false;
+
+            // ---- звук ----
+            function playClownSound() {
+                try {
+                    clownAudio.currentTime = 0;
+                    const promise = clownAudio.play();
+                    if (promise !== undefined) {
+                        promise.catch(() => {});
+                    }
+                } catch (_) {}
+            }
+
+            // ---- конфетти ----
+            function fireConfetti() {
+                if (isConfettiActive) return;
+                isConfettiActive = true;
+
+                const container = confettiContainer;
+                const colors = ['#facc15', '#f87171', '#60a5fa', '#34d399', '#f472b6', '#c084fc', '#fb923c', '#22d3ee'];
+                const count = 80;
+
+                for (let i = 0; i < count; i++) {
+                    const piece = document.createElement('div');
+                    piece.className = 'confetti-piece';
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    piece.style.backgroundColor = color;
+
+                    const startX = window.innerWidth / 2 + (Math.random() - 0.5) * 140;
+                    const startY = window.innerHeight / 2 + (Math.random() - 0.5) * 100;
+                    piece.style.left = startX + 'px';
+                    piece.style.top = startY + 'px';
+
+                    const size = 10 + Math.random() * 16;
+                    piece.style.width = size + 'px';
+                    piece.style.height = size + 'px';
+                    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '3px';
+
+                    const angle = Math.random() * 2 * Math.PI;
+                    const distance = 200 + Math.random() * 700;
+                    const tx = Math.cos(angle) * distance;
+                    const ty = Math.sin(angle) * distance - 200;
+
+                    piece.style.setProperty('--tx', tx + 'px');
+                    piece.style.setProperty('--ty', ty + 'px');
+
+                    const duration = 2 + Math.random() * 1.4;
+                    piece.style.animationDuration = duration + 's';
+                    piece.style.animationDelay = (Math.random() * 0.4) + 's';
+
+                    container.appendChild(piece);
+
+                    setTimeout(() => {
+                        if (piece.parentNode) piece.remove();
+                    }, (duration + 0.8) * 1000);
+                }
+
+                setTimeout(() => {
+                    isConfettiActive = false;
+                }, 3500);
+            }
+
+            // ---- показать анекдот ----
+            function showJoke() {
+                if (jokeShown) return;
+                jokeShown = true;
+
+                const randomIndex = Math.floor(Math.random() * jokes.length);
+                jokeDisplay.innerHTML = jokes[randomIndex];
+                jokeDisplay.classList.add('show');
+
+                questionText.style.display = 'none';
+                btnGroup.style.display = 'none';
+
+                playClownSound();
+                fireConfetti();
+
+                setTimeout(() => {
+                    if (!isConfettiActive) fireConfetti();
+                }, 500);
+            }
+
+            // ---- ДВИЖЕНИЕ КНОПКИ "НЕТ" (для телефона — по касанию и наведению) ----
+            function moveNoButton() {
+                if (jokeShown) return;
+
+                const cardRect = mainCard.getBoundingClientRect();
+                const btnRect = noBtn.getBoundingClientRect();
+
+                const btnWidth = noBtn.offsetWidth;
+                const btnHeight = noBtn.offsetHeight;
+
+                // отступы внутри карточки
+                const padding = 16;
+                const areaWidth = cardRect.width - padding * 2 - btnWidth;
+                const areaHeight = cardRect.height - padding * 2 - btnHeight;
+
+                if (areaWidth <= 0 || areaHeight <= 0) return;
+
+                // текущая позиция (относительно карточки)
+                const currentLeft = noBtn.offsetLeft;
+                const currentTop = noBtn.offsetTop;
+
+                let newLeft, newTop;
+                let attempts = 0;
+                const maxAttempts = 40;
+
+                do {
+                    newLeft = Math.random() * areaWidth + padding;
+                    newTop = Math.random() * areaHeight + padding;
+                    attempts++;
+                } while (
+                    (Math.abs(newLeft - currentLeft) < 50 && Math.abs(newTop - currentTop) < 50) &&
+                    attempts < maxAttempts
+                );
+
+                noBtn.style.left = newLeft + 'px';
+                noBtn.style.top = newTop + 'px';
+            }
+
+            // ---- события для "Нет" ----
+            // Наведение (для мыши) — работает и на телефонах с тачпадом
+            noBtn.addEventListener('mouseenter', function(e) {
+                if (jokeShown) return;
+                moveNoButton();
+            });
+
+            // Для телефонов: касание по кнопке "Нет" — убегаем
+            noBtn.addEventListener('touchstart', function(e) {
+                if (jokeShown) return;
+                // немного задерживаем, чтобы не мешать нажатию, но всё равно двигаем
+                // При touchstart мы не даём событию сразу сработать, но перемещаем
+                e.preventDefault(); // отменяем стандартное поведение (чтобы не кликалось)
+                moveNoButton();
+            }, { passive: false });
+
+            // Также при клике (для мыши) — если вдруг догнали
+            noBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!jokeShown) {
+                    moveNoButton();
+                }
+            });
+
+            // ---- "Да" ----
+            yesBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                showJoke();
+            });
+
+            // Для телефона: touch на "Да" тоже сработает как click, но дублируем для надёжности
+            yesBtn.addEventListener('touchstart', function(e) {
+                // не мешаем, просто разрешаем событие
+            }, { passive: true });
+
+            // также обрабатываем нажатие на "Да" через touch (чтобы точно сработало)
+            yesBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                showJoke();
+            }, { passive: false });
+
+            // ---- сброс позиции при ресайзе (чтобы не вылезала) ----
+            window.addEventListener('resize', function() {
+                if (!jokeShown) {
+                    // если кнопка видна, сбрасываем left/top, чтобы она не уплыла
+                    noBtn.style.left = 'auto';
+                    noBtn.style.top = 'auto';
+                }
+            });
+
+            // ---- дополнительно: если окно повернули — тоже сброс ----
+            window.addEventListener('orientationchange', function() {
+                setTimeout(() => {
+                    if (!jokeShown) {
+                        noBtn.style.left = 'auto';
+                        noBtn.style.top = 'auto';
+                    }
+                }, 300);
+            });
+
+            console.log('🤡 Мобильная версия: тапай "Да" — будет весело!');
+        })();
+    </script>
+</body>
+</html>
